@@ -1,72 +1,47 @@
 <div class="login-page">
   <div class="login-card">
-    <!-- Colonne gauche : branding -->
-    <div class="login-card__left">
-      <div class="pattern-overlay"></div>
-      <div class="deco-circle deco-circle-1"></div>
-      <div class="deco-circle deco-circle-2"></div>
-      <div class="deco-circle deco-circle-3"></div>
+    <!-- Left Panel - Hidden with new design -->
+    <div class="login-card__left"></div>
 
-      <div class="welcome">
-        <h2>Bienvenue dans votre espace bancaire sécurisé</h2>
-        <div class="divider"></div>
-        <p>
-          Gérez vos finances en toute sérénité avec nos solutions bancaires innovantes.
-          Accédez à vos comptes, effectuez vos virements et suivez vos transactions 24h/24.
-        </p>
-      </div>
-    </div>
-
-    <!-- Colonne droite : formulaire Angular -->
+    <!-- Right Panel - Form -->
     <div class="login-card__right">
+      <div class="brand">
+        <h1 class="brand-title">BarakaPay</h1>
+        <p class="brand-subtitle">Votre banque digitale</p>
+      </div>
+
       <div class="login-header">
-        <h1>Connexion sécurisée</h1>
-        <p>Accédez à votre espace Al Baraka Digital</p>
+        <h1>Connexion</h1>
+        <p>Accédez à votre espace sécurisé</p>
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
         <div class="form-group">
-          <label for="email">Adresse email</label>
-          <input
-            type="email"
-            id="email"
-            formControlName="email"
-            placeholder="votreemail@exemple.com"
-          />
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" placeholder="votreemail@exemple.com" />
         </div>
 
         <div class="form-group">
           <label for="password">Mot de passe</label>
-          <input
-            type="password"
-            id="password"
-            formControlName="password"
-            placeholder="••••••••••"
-          />
-        </div>
-
-        <div class="form-options">
-          <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+          <input type="password" id="password" formControlName="password" placeholder="••••••••" />
         </div>
 
         <div class="error-message" *ngIf="errorMessage">
           {{ errorMessage }}
         </div>
 
-        <button
-          mat-raised-button
-          color="primary"
-          class="submit-button"
-          type="submit"
-          [disabled]="isSubmitting"
-        >
+        <button class="submit-button" type="submit" [disabled]="isSubmitting">
           <span *ngIf="!isSubmitting">Se connecter</span>
           <span *ngIf="isSubmitting" class="loading">
             <span class="spinner"></span>
-            <span>Connexion en cours...</span>
+            <span>Connexion...</span>
           </span>
         </button>
       </form>
+
+      <div class="login-footer">
+        Connexion sécurisée • BarakaPay
+      </div>
     </div>
   </div>
 </div>

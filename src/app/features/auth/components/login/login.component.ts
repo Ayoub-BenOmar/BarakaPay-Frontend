@@ -68,7 +68,7 @@ export class LoginComponent {
 
         if (roles.includes('ADMIN')) {
           this.router.navigate(['/admin']);
-        } else if (roles.includes('AGENT_BANCAIRE')) {
+        } else if (roles.includes('AGENT')) {
           this.router.navigate(['/agent']);
         } else {
           // Par défaut, on considère que c'est un client
