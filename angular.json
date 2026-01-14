@@ -64,7 +64,8 @@
               "buildTarget": "albaraka-digital-bank-frontend:build:production"
             },
             "development": {
-              "buildTarget": "albaraka-digital-bank-frontend:build:development"
+              "buildTarget": "albaraka-digital-bank-frontend:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
@@ -96,5 +97,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "3c05586c-be75-478d-9ae5-1db859593ff5"
   }
 }
