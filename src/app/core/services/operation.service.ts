@@ -22,13 +22,15 @@ export type OperationType = 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER';
 
 export interface OperationResponse {
   id: number;
-  type: OperationType;
+  operationType: OperationType;
   amount: number;
-  status: OperationStatus;
+  operationStatus: OperationStatus;
   createdAt: string;
   executedAt: string | null;
-  accountSourceNumber: string;
-  accountDestinationNumber: string | null;
+  accountSourceId: number | null;
+  accountDestinationId: number | null;
+  accountSourceNumber?: string | null;
+  accountDestinationNumber?: string | null;
 }
 
 export interface Page<T> {
@@ -77,9 +79,19 @@ export interface AgentDocumentResponse {
 }
 
 export interface PendingOperation extends OperationResponse {
-  accountSource: OperationAccount;
-  accountDestination: OperationAccount | null;
-  documents: OperationDocument[] | null;
+  // Backend JSON for pending ops seems to match OperationResponse structure + potential extras?
+  // If backend returns simplified JSON without nested objects, we must adapt.
+  // Assuming list of docs IDs is returned as documentIds: number[] based on user sample
+  documentIds?: number[];
+
+  // Client info returned directly by backend
+  clientName?: string;
+  clientEmail?: string;
+
+  // Keep these if we hope backend eventually sends them, or make optional
+  accountSource?: OperationAccount;
+  accountDestination?: OperationAccount | null;
+  documents?: OperationDocument[] | null;
 
   // Flag envoyé par l’API pour indiquer la présence de justificatif (si dispo)
   hasDocument?: boolean;
@@ -98,53 +110,47 @@ export interface PendingOperation extends OperationResponse {
 export class OperationService {
   private readonly baseUrl = environment.apiBaseUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getMyAccount(): Observable<AccountResponse> {
-    const url = `${this.baseUrl}/api/client/account/me`;
+    const url = `${this.baseUrl}/api/client/my-account`;
     return this.http.get<AccountResponse>(url);
   }
 
-  getMyOperations(page = 0, size = 10): Observable<Page<OperationResponse>> {
-    const url = `${this.baseUrl}/api/client/operations`;
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<Page<OperationResponse>>(url, { params });
+  getMyOperations(): Observable<OperationResponse[]> {
+    const url = `${this.baseUrl}/api/client/my-operations`;
+    return this.http.get<OperationResponse[]>(url);
   }
 
-  getPendingOperations(page = 0, size = 10): Observable<Page<PendingOperation>> {
-    const url = `${this.baseUrl}/api/agent/operations/jwt/pending`;
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<Page<PendingOperation>>(url, { params });
+  getPendingOperations(): Observable<PendingOperation[]> {
+    const url = `${this.baseUrl}/api/agent/operations/pending`;
+    return this.http.get<PendingOperation[]>(url);
   }
 
   deposit(amount: number): Observable<OperationResponse> {
-    const url = `${this.baseUrl}/api/client/operations`;
-    const body: OperationRequest = { type: 'DEPOSIT', amount };
-    return this.http.post<OperationResponse>(url, body);
+    const url = `${this.baseUrl}/api/client/deposit`;
+    const params = new HttpParams().set('amount', amount.toString());
+    return this.http.post<OperationResponse>(url, {}, { params });
   }
 
   withdraw(amount: number): Observable<OperationResponse> {
-    const url = `${this.baseUrl}/api/client/operations`;
-    const body: OperationRequest = { type: 'WITHDRAWAL', amount };
-    return this.http.post<OperationResponse>(url, body);
+    const url = `${this.baseUrl}/api/client/withdraw`;
+    const params = new HttpParams().set('amount', amount.toString());
+    return this.http.post<OperationResponse>(url, {}, { params });
   }
 
   transfer(amount: number, destinationAccountNumber: string): Observable<OperationResponse> {
-    const url = `${this.baseUrl}/api/client/operations`;
-    const body: OperationRequest = { type: 'TRANSFER', amount, destinationAccountNumber };
-    return this.http.post<OperationResponse>(url, body);
+    const url = `${this.baseUrl}/api/client/transfer`;
+    const params = new HttpParams()
+      .set('amount', amount.toString())
+      .set('toAccount', destinationAccountNumber);
+    return this.http.post<OperationResponse>(url, {}, { params });
   }
 
   uploadJustificatif(operationId: number, file: File): Observable<DocumentResponse> {
-    const url = `${this.baseUrl}/api/client/operations/${operationId}/document`;
+    const url = `${this.baseUrl}/api/client/operations/${operationId}/documents`;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('document', file); // Changed from 'file' to 'document'
     return this.http.post<DocumentResponse>(url, formData);
   }
 

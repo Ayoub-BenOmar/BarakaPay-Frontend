@@ -33,10 +33,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
-        // Token expiré ou non autorisé → on nettoie et on renvoie au login
-        authService.logout(); // supprime le token + navigate('/auth')
+      if (error.status === 401) {
+        // Token expiré ou invalide → on nettoie et on renvoie au login
+        authService.logout();
       }
+      // pour 403, on laisse l'erreur remonter pour l'afficher (ex: "Accès interdit") sans déconnecter
 
       return throwError(() => error);
     })
