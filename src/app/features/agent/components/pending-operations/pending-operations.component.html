@@ -20,13 +20,8 @@
 
     <div class="filter-group">
       <label for="client-filter">Client</label>
-      <input
-        id="client-filter"
-        type="text"
-        placeholder="Nom ou email client"
-        [(ngModel)]="filterClient"
-        (input)="onFilterChange()"
-      />
+      <input id="client-filter" type="text" placeholder="Nom ou email client" [(ngModel)]="filterClient"
+        (input)="onFilterChange()" />
     </div>
 
     <div class="filter-group">
@@ -67,7 +62,6 @@
           <th>Type</th>
           <th>Montant</th>
           <th>Date création</th>
-          <th>Décision IA</th>
           <th></th>
         </tr>
       </thead>
@@ -75,19 +69,18 @@
         <tr *ngFor="let op of operations">
           <td>{{ op.clientFullName }}</td>
           <td>{{ op.clientEmail }}</td>
-          <td>{{ op.type }}</td>
+          <td>{{ op.operationType }}</td>
           <td>{{ op.amount | number:'1.2-2' }} DH</td>
           <td>{{ op.createdAt | date:'short' }}</td>
           <td>
-            <span *ngIf="op.aiDecision; else noAi">
-              {{ op.aiDecision }}
-            </span>
-            <ng-template #noAi>—</ng-template>
-          </td>
-          <td>
-            <button type="button" class="btn-detail" (click)="openDetail(op.id)">
-              Voir détail
-            </button>
+            <div class="action-buttons">
+              <button type="button" class="btn-small btn-approve" (click)="onApprove(op.id, $event)">
+                Approuver
+              </button>
+              <button type="button" class="btn-small btn-reject" (click)="onReject(op.id, $event)">
+                Rejeter
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -111,16 +104,7 @@
 </section>
 
 <!-- Panneau de détail -->
-<app-operation-detail
-  *ngIf="selectedOperation"
-  [operation]="selectedOperation"
-  [documents]="detailDocuments"
-  [isLoadingDocuments]="isLoadingDocuments"
-  [actionInProgress]="actionInProgress"
-  [actionSuccessMessage]="actionSuccessMessage"
-  [actionErrorMessage]="actionErrorMessage"
-  [apiBaseUrl]="apiBaseUrl"
-  (approve)="onApproveFromDetail()"
-  (reject)="onRejectFromDetail()"
-  (close)="closeDetail()"
-></app-operation-detail>
+<app-operation-detail *ngIf="selectedOperation" [operation]="selectedOperation" [documents]="detailDocuments"
+  [isLoadingDocuments]="isLoadingDocuments" [actionInProgress]="actionInProgress"
+  [actionSuccessMessage]="actionSuccessMessage" [actionErrorMessage]="actionErrorMessage" [apiBaseUrl]="apiBaseUrl"
+  (approve)="onApproveFromDetail()" (reject)="onRejectFromDetail()" (close)="closeDetail()"></app-operation-detail>

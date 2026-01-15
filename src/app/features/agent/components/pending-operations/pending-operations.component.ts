@@ -12,9 +12,9 @@ import { environment } from '../../../../../environments/environment';
 
 interface PendingOperationView {
   id: number;
-  type: string;
+  operationType: string;
   amount: number;
-  status: 'PENDING' | 'VALIDATED' | 'REJECTED';
+  operationStatus: 'PENDING' | 'VALIDATED' | 'REJECTED';
   createdAt: string;
   clientFullName: string;
   clientEmail: string;
@@ -23,7 +23,7 @@ interface PendingOperationView {
   aiComment?: string | null;
 }
 
-type SortField = 'createdAt' | 'amount' | 'clientFullName' | 'type';
+type SortField = 'createdAt' | 'amount' | 'clientFullName' | 'operationType';
 type SortDirection = 'asc' | 'desc';
 
 @Component({
@@ -35,8 +35,9 @@ type SortDirection = 'asc' | 'desc';
 })
 export class PendingOperationsComponent implements OnInit {
   // Données
-  rawPage: Page<PendingOperation> | null = null;
+  // rawPage: Page<PendingOperation> | null = null;
   operations: PendingOperationView[] = [];
+  allOperations: PendingOperation[] = [];
 
   // Pagination
   page = 0;
@@ -66,7 +67,7 @@ export class PendingOperationsComponent implements OnInit {
 
   readonly apiBaseUrl = environment.apiBaseUrl;
 
-  constructor(private operationService: OperationService) {}
+  constructor(private operationService: OperationService) { }
 
   ngOnInit(): void {
     this.loadPendingOperations();
@@ -76,20 +77,20 @@ export class PendingOperationsComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    this.operationService.getPendingOperations(page, this.size).subscribe({
+    this.operationService.getPendingOperations().subscribe({
       next: (response) => {
-        this.rawPage = response;
-        this.page = response.number;
-        this.size = response.size;
-        this.totalElements = response.totalElements;
-        this.totalPages = response.totalPages;
+        this.allOperations = response; // Store raw array
 
-        const mapped = response.content.map((op) => this.mapToView(op));
+        // Mock pagination
+        this.totalElements = response.length;
+        this.totalPages = 1;
+
+        const mapped = this.allOperations.map((op) => this.mapToView(op));
         this.operations = this.applyFiltersAndSort(mapped);
 
         // Si on avait une opération sélectionnée, la rafraîchir
         if (this.selectedOperation) {
-          const updated = response.content.find(
+          const updated = this.allOperations.find(
             (op) => op.id === this.selectedOperation?.id
           );
           if (updated) {
@@ -114,34 +115,42 @@ export class PendingOperationsComponent implements OnInit {
   }
 
   private mapToView(op: PendingOperation): PendingOperationView {
-    const owner = op.accountSource?.owner;
+    // Backend JSON structure changed:
+    // - no nested accountSource/owner objects
+    // - type -> operationType, status -> operationStatus
+    // - documentIds array instead of documents object list?
+    // - clientName and clientEmail now returned directly
 
-    // 1) Utiliser le flag hasDocument si l’API le renvoie
-    // 2) Sinon, déduire à partir de la liste documents
+    // 1) Utiliser le flag hasDocument si l'API le renvoie
+    // 2) Sinon, déduire à partir de la liste documentIds ou documents
     const hasDoc =
       typeof op.hasDocument === 'boolean'
         ? op.hasDocument
-        : Array.isArray(op.documents) && op.documents.length > 0;
+        : (op.documentIds && op.documentIds.length > 0) || (op.documents && op.documents.length > 0);
+
+    // Use clientName/clientEmail from backend, fallback to nested structure or placeholder
+    const clientName = op.clientName ?? op.accountSource?.owner?.fullName ?? '—';
+    const clientEmail = op.clientEmail ?? op.accountSource?.owner?.email ?? '—';
 
     return {
       id: op.id,
-      type: op.type,
+      operationType: op.operationType,
       amount: op.amount,
-      status: op.status,
+      operationStatus: op.operationStatus,
       createdAt: op.createdAt,
-      clientFullName: owner?.fullName ?? '—',
-      clientEmail: owner?.email ?? '—',
-      hasDocument: hasDoc,
+      clientFullName: clientName,
+      clientEmail: clientEmail,
+      hasDocument: !!hasDoc,
       aiDecision: op.aiDecision ?? null,
       aiComment: op.aiComment ?? null
     };
   }
 
   onFilterChange(): void {
-    if (!this.rawPage) {
+    if (!this.allOperations) {
       return;
     }
-    const mapped = this.rawPage.content.map((op) => this.mapToView(op));
+    const mapped = this.allOperations.map((op) => this.mapToView(op));
     this.operations = this.applyFiltersAndSort(mapped);
   }
 
@@ -154,7 +163,7 @@ export class PendingOperationsComponent implements OnInit {
 
     // Filtre type
     if (this.filterType) {
-      result = result.filter((op) => op.type === this.filterType);
+      result = result.filter((op) => op.operationType === this.filterType);
     }
 
     // Filtre client (nom ou email)
@@ -178,8 +187,8 @@ export class PendingOperationsComponent implements OnInit {
         case 'clientFullName':
           cmp = a.clientFullName.localeCompare(b.clientFullName);
           break;
-        case 'type':
-          cmp = a.type.localeCompare(b.type);
+        case 'operationType':
+          cmp = a.operationType.localeCompare(b.operationType);
           break;
         case 'createdAt':
         default:
@@ -208,10 +217,10 @@ export class PendingOperationsComponent implements OnInit {
   // === Détail ===
 
   openDetail(opId: number): void {
-    if (!this.rawPage) {
+    if (!this.allOperations) {
       return;
     }
-    const found = this.rawPage.content.find((op) => op.id === opId);
+    const found = this.allOperations.find((op) => op.id === opId);
     if (!found) {
       return;
     }
@@ -297,6 +306,42 @@ export class PendingOperationsComponent implements OnInit {
           err && err.error && err.error.message
             ? err.error.message
             : "Une erreur est survenue lors du rejet.";
+      }
+    });
+  }
+
+  onApprove(id: number, event: Event): void {
+    event.stopPropagation();
+    if (!window.confirm('Voulez-vous vraiment approuver cette opération ?')) {
+      return;
+    }
+
+    this.actionErrorMessage = null;
+    this.operationService.approveOperation(id).subscribe({
+      next: () => {
+        this.loadPendingOperations(this.page);
+      },
+      error: (err) => {
+        console.error('Erreur approbation', err);
+        alert("Une erreur est survenue lors de l'approbation.");
+      }
+    });
+  }
+
+  onReject(id: number, event: Event): void {
+    event.stopPropagation();
+    if (!window.confirm('Voulez-vous vraiment rejeter cette opération ?')) {
+      return;
+    }
+
+    this.actionErrorMessage = null;
+    this.operationService.rejectOperation(id).subscribe({
+      next: () => {
+        this.loadPendingOperations(this.page);
+      },
+      error: (err) => {
+        console.error('Erreur rejet', err);
+        alert("Une erreur est survenue lors du rejet.");
       }
     });
   }

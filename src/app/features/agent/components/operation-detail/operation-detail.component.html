@@ -4,10 +4,10 @@
       <div>
         <h2>Opération #{{ operation.id }}</h2>
         <p class="subtitle">
-          {{ operation.type }} •
+          {{ operation.operationType }} •
           {{ operation.amount | number:'1.2-2' }} DH •
-          <span class="status-badge" [ngClass]="'status-' + operation.status.toLowerCase()">
-            {{ operation.status }}
+          <span class="status-badge" [ngClass]="'status-' + operation.operationStatus.toLowerCase()">
+            {{ operation.operationStatus }}
           </span>
         </p>
       </div>
@@ -16,25 +16,13 @@
 
     <!-- Corps -->
     <div class="detail-body">
-      <!-- Infos client -->
-      <section class="detail-section">
-        <h3>Client</h3>
-        <p>
-          <strong>{{ operation.accountSource.owner.fullName }}</strong><br />
-          <span class="muted">{{ operation.accountSource.owner.email }}</span>
-        </p>
-        <p class="muted">
-          Compte source : {{ operation.accountSource.accountNumber }}
-        </p>
-      </section>
-
       <!-- Informations opération -->
       <section class="detail-section">
         <h3>Détails de l'opération</h3>
         <div class="grid-2">
           <div>
             <div class="label">Type</div>
-            <div>{{ operation.type }}</div>
+            <div>{{ operation.operationType }}</div>
           </div>
           <div>
             <div class="label">Montant</div>
@@ -47,6 +35,14 @@
           <div>
             <div class="label">Date exécution</div>
             <div>{{ operation.executedAt ? (operation.executedAt | date:'short') : '—' }}</div>
+          </div>
+          <div *ngIf="operation.accountSourceNumber">
+            <div class="label">Compte source</div>
+            <div>{{ operation.accountSourceNumber }}</div>
+          </div>
+          <div *ngIf="operation.accountDestinationNumber">
+            <div class="label">Compte destination</div>
+            <div>{{ operation.accountDestinationNumber }}</div>
           </div>
         </div>
 
@@ -103,21 +99,11 @@
 
       <!-- Boutons visibles seulement s'il y a au moins un justificatif -->
       <div class="actions-buttons" *ngIf="!isLoadingDocuments && documents.length > 0">
-        <button
-          type="button"
-          class="btn-reject"
-          (click)="onReject()"
-          [disabled]="actionInProgress"
-        >
+        <button type="button" class="btn-reject" (click)="onReject()" [disabled]="actionInProgress">
           {{ actionInProgress ? 'Traitement...' : 'Rejeter' }}
         </button>
 
-        <button
-          type="button"
-          class="btn-approve"
-          (click)="onApprove()"
-          [disabled]="actionInProgress"
-        >
+        <button type="button" class="btn-approve" (click)="onApprove()" [disabled]="actionInProgress">
           {{ actionInProgress ? 'Traitement...' : 'Approuver' }}
         </button>
       </div>
