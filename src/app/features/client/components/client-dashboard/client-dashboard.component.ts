@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router'; 
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { OperationService, AccountResponse, OperationResponse } from '../../../../core/services/operation.service';
 @Component({
@@ -28,8 +28,8 @@ export class ClientDashboardComponent implements OnInit {
   constructor(
     private operationService: OperationService,
     private authService: AuthService
-  ) {}
-  
+  ) { }
+
   ngOnInit(): void {
     this.loadAccount();
     this.loadOperations();
@@ -58,14 +58,18 @@ export class ClientDashboardComponent implements OnInit {
     this.isLoadingOperations = true;
     this.errorOperations = null;
 
-    this.operationService.getMyOperations(page, this.size).subscribe({
+    this.operationService.getMyOperations().subscribe({
       next: (response) => {
-        this.operations = response.content;
-        this.page = response.number;
-        this.size = response.size;
-        this.totalElements = response.totalElements;
-        this.totalPages = response.totalPages;
-        this.computeStats(); 
+        // Backend returns List<OperationDto> directly
+        this.operations = response;
+
+        // Mock pagination stats since backend doesn't support it yet
+        this.page = 0;
+        this.size = response.length; // Show all
+        this.totalElements = response.length;
+        this.totalPages = 1;
+
+        this.computeStats();
       },
       error: () => {
         this.errorOperations = "Impossible de charger l'historique des opérations.";
@@ -81,20 +85,22 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   goToPage(page: number): void {
+    // Client-side pagination can be implemented here if needed
     if (page < 0 || page >= this.totalPages) {
       return;
     }
-    this.loadOperations(page);
+    // For now, since we fetch all, just ignore or implement client slicing if list is huge
+    // this.loadOperations(page); 
   }
 
   pendingCount = 0;
   validatedDepositsCount = 0;
 
   private computeStats(): void {
-    this.pendingCount = this.operations.filter((op) => op.status === 'PENDING').length;
+    this.pendingCount = this.operations.filter((op) => op.operationStatus === 'PENDING').length;
 
     this.validatedDepositsCount = this.operations.filter(
-      (op) => op.type === 'DEPOSIT' && op.status === 'VALIDATED'
+      (op) => op.operationType === 'DEPOSIT' && op.operationStatus === 'VALIDATED'
     ).length;
   }
 }

@@ -18,12 +18,7 @@
         <!-- Montant -->
         <div class="form-field">
           <label for="amount">Montant</label>
-          <input
-            id="amount"
-            type="number"
-            formControlName="amount"
-            placeholder="Ex : 500.00"
-          />
+          <input id="amount" type="number" formControlName="amount" placeholder="Ex : 500.00" />
           <div class="field-error" *ngIf="f['amount'].touched && f['amount'].invalid">
             <span *ngIf="f['amount'].errors?.['required']">Le montant est obligatoire.</span>
             <span *ngIf="f['amount'].errors?.['min']">Le montant doit être strictement positif.</span>
@@ -33,23 +28,14 @@
         <!-- Description -->
         <div class="form-field full-width">
           <label for="description">Description</label>
-          <input
-            id="description"
-            type="text"
-            formControlName="description"
-            placeholder="Retrait au guichet"
-          />
+          <input id="description" type="text" formControlName="description" placeholder="Retrait au guichet" />
         </div>
 
         <!-- Upload justificatif si montant > 10 000 DH -->
         <div class="form-field full-width" *ngIf="f['amount'].value && f['amount'].value > 10000">
           <label for="withdrawal-file">Justificatif (PDF, JPG, PNG)</label>
-          <input
-            id="withdrawal-file"
-            type="file"
-            (change)="onFileSelected($event)"
-            accept=".pdf,image/png,image/jpeg"
-          />
+          <input id="withdrawal-file" type="file" (change)="onFileSelected($event)"
+            accept=".pdf,image/png,image/jpeg" />
           <div class="field-error" *ngIf="fileError">
             {{ fileError }}
           </div>
@@ -80,8 +66,8 @@
         <div *ngIf="lastOperation" class="operation-summary">
           Dernier retrait :
           <strong>{{ lastOperation.amount | number:'1.2-2' }} DH</strong>
-          <span class="status-badge" [ngClass]="'status-' + lastOperation.status.toLowerCase()">
-            {{ lastOperation.status }}
+          <span class="status-badge" [ngClass]="'status-' + lastOperation.operationStatus.toLowerCase()">
+            {{ lastOperation.operationStatus }}
           </span>
         </div>
 

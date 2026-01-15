@@ -76,14 +76,14 @@
       <tbody>
         <tr *ngFor="let op of operations">
           <td>{{ op.createdAt | date:'short' }}</td>
-          <td>{{ op.type }}</td>
+          <td>{{ op.operationType }}</td>
           <td>{{ op.amount | number:'1.2-2' }} DH</td>
           <td>
-            <span class="status-badge" [ngClass]="getStatusClass(op.status)">
-              {{ op.status }}
+            <span class="status-badge" [ngClass]="getStatusClass(op.operationStatus)">
+              {{ op.operationStatus }}
             </span>
           </td>
-          <td>{{ op.accountSourceNumber }}</td>
+          <td>{{ op.accountSourceNumber || '-' }}</td>
           <td>{{ op.accountDestinationNumber || '-' }}</td>
         </tr>
       </tbody>

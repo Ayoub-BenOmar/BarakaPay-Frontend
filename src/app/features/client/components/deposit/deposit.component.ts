@@ -86,10 +86,10 @@ export class DepositComponent {
         this.isSubmitting = false;
         this.lastOperation = op;
 
-        if (op.status === 'VALIDATED') {
-          this.successMessage = `Dépôt de ${op.amount} DH validé (statut: ${op.status}).`;
+        if (op.operationStatus === 'VALIDATED') {
+          this.successMessage = `Dépôt de ${op.amount} DH validé (statut: ${op.operationStatus}).`;
         } else {
-          this.successMessage = `Dépôt de ${op.amount} DH enregistré (statut: ${op.status}).`;
+          this.successMessage = `Dépôt de ${op.amount} DH enregistré (statut: ${op.operationStatus}).`;
         }
 
         if (op.amount > 10000 && this.selectedFile) {
