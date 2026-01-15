@@ -10,36 +10,23 @@
   <div class="filters-bar">
     <div class="filter-group">
       <label for="email-filter">Email / Nom</label>
-      <input
-        id="email-filter"
-        type="text"
-        placeholder="Email ou nom"
-        [(ngModel)]="filterEmail"
-        (input)="onFilterChange()"
-      />
+      <input id="email-filter" type="text" placeholder="Email ou nom" [(ngModel)]="filterEmail"
+        (input)="onFilterChange()" />
     </div>
 
     <div class="filter-group">
       <label for="role-filter">Rôle</label>
-      <select
-        id="role-filter"
-        [(ngModel)]="filterRole"
-        (change)="onFilterChange()"
-      >
+      <select id="role-filter" [(ngModel)]="filterRole" (change)="onFilterChange()">
         <option value="">Tous</option>
         <option value="CLIENT">Client</option>
-        <option value="AGENT_BANCAIRE">Agent bancaire</option>
+        <option value="AGENT">Agent bancaire</option>
         <option value="ADMIN">Admin</option>
       </select>
     </div>
 
     <div class="filter-group">
       <label for="status-filter">Statut</label>
-      <select
-        id="status-filter"
-        [(ngModel)]="filterActive"
-        (change)="onFilterChange()"
-      >
+      <select id="status-filter" [(ngModel)]="filterActive" (change)="onFilterChange()">
         <option value="">Tous</option>
         <option value="ACTIVE">Actif</option>
         <option value="INACTIVE">Inactif</option>
@@ -48,11 +35,7 @@
 
     <div class="filter-group">
       <label for="sort-field">Tri</label>
-      <select
-        id="sort-field"
-        [(ngModel)]="sortField"
-        (change)="onSortChange()"
-      >
+      <select id="sort-field" [(ngModel)]="sortField" (change)="onSortChange()">
         <option value="createdAt">Date création</option>
         <option value="fullName">Nom</option>
         <option value="email">Email</option>
@@ -62,11 +45,7 @@
 
     <div class="filter-group">
       <label for="sort-dir">Ordre</label>
-      <select
-        id="sort-dir"
-        [(ngModel)]="sortDirection"
-        (change)="onSortChange()"
-      >
+      <select id="sort-dir" [(ngModel)]="sortDirection" (change)="onSortChange()">
         <option value="desc">Décroissant</option>
         <option value="asc">Croissant</option>
       </select>
@@ -108,25 +87,14 @@
             </span>
           </td>
           <td>
-            <button
-              *ngIf="!user.active"
-              class="btn-small btn-activate"
-              (click)="onToggleActive(user, true)"
-            >
+            <button *ngIf="!user.active" class="btn-small btn-activate" (click)="onToggleActive(user, true)">
               Activer
             </button>
-            <button
-              *ngIf="user.active"
-              class="btn-small btn-deactivate"
-              (click)="onToggleActive(user, false)"
-            >
+            <button *ngIf="user.active" class="btn-small btn-deactivate" (click)="onToggleActive(user, false)">
               Désactiver
             </button>
 
-            <button
-              class="btn-small btn-edit-role"
-              (click)="openRoleModal(user)"
-            >
+            <button class="btn-small btn-edit-role" (click)="openRoleModal(user)">
               Modifier le rôle
             </button>
           </td>
@@ -135,10 +103,7 @@
       </tbody>
     </table>
 
-    <div
-      *ngIf="!isLoading && !errorMessage && users.length === 0"
-      class="info-text"
-    >
+    <div *ngIf="!isLoading && !errorMessage && users.length === 0" class="info-text">
       Aucun utilisateur trouvé.
     </div>
   </div>
@@ -153,10 +118,7 @@
       Précédent
     </button>
     <span>Page {{ page + 1 }} / {{ totalPages }}</span>
-    <button
-      (click)="goToPage(page + 1)"
-      [disabled]="page + 1 >= totalPages"
-    >
+    <button (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">
       Suivant
     </button>
   </div>
@@ -167,11 +129,7 @@
   </div>
 
   <!-- Modale modification de rôle -->
-  <div
-    class="modal-backdrop"
-    *ngIf="selectedUserForRole"
-    (click)="closeRoleModal()"
-  >
+  <div class="modal-backdrop" *ngIf="selectedUserForRole" (click)="closeRoleModal()">
     <div class="modal-panel" (click)="$event.stopPropagation()">
       <h3>Modifier le rôle</h3>
       <p class="modal-subtitle">
@@ -185,7 +143,7 @@
         <select id="role-select" [(ngModel)]="selectedRole">
           <option value="">Sélectionner un rôle</option>
           <option value="CLIENT">Client</option>
-          <option value="AGENT_BANCAIRE">Agent bancaire</option>
+          <option value="AGENT">Agent bancaire</option>
           <option value="ADMIN">Administrateur</option>
         </select>
       </div>

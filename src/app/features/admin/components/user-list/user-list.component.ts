@@ -18,8 +18,9 @@ type SortDirection = 'asc' | 'desc';
   styleUrls: ['./user-list.component.css']
 })
 export class UserListComponent implements OnInit {
-  rawPage: Page<AdminUserSummary> | null = null;
-  users: AdminUserSummary[] = [];
+  // rawPage: Page<AdminUserSummary> | null = null; // Removing pagination support for now
+  users: AdminUserSummary[] = []; // Used for filtered view
+  allUsers: AdminUserSummary[] = []; // Stores all users from backend
 
   // pagination
   page = 0;
@@ -34,7 +35,7 @@ export class UserListComponent implements OnInit {
 
   // filtres front
   filterEmail = '';
-  filterRole: '' | 'CLIENT' | 'AGENT_BANCAIRE' | 'ADMIN' = '';
+  filterRole: '' | 'CLIENT' | 'AGENT' | 'ADMIN' = '';
   filterActive: '' | 'ACTIVE' | 'INACTIVE' = '';
 
   // tri front
@@ -47,7 +48,7 @@ export class UserListComponent implements OnInit {
   roleErrorMessage: string | null = null;
   roleSuccessMessage: string | null = null;
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -58,15 +59,17 @@ export class UserListComponent implements OnInit {
     this.errorMessage = null;
     this.actionErrorMessage = null;
 
-    this.userService.getAdminUsers(page, this.size).subscribe({
+    // Service adjusted to return array, ignoring page/size params
+    this.userService.getAdminUsers().subscribe({
       next: (response) => {
-        this.rawPage = response;
-        this.page = response.number;
-        this.size = response.size;
-        this.totalElements = response.totalElements;
-        this.totalPages = response.totalPages;
+        // Backend now returns AdminUserSummary[] directly (no pagination wrapper)
+        this.allUsers = response;
 
-        this.users = this.applyFiltersAndSort(response.content);
+        // Mock pagination for frontend compatibility if needed, or just show all
+        this.totalElements = response.length;
+        this.totalPages = 1;
+
+        this.users = this.applyFiltersAndSort(this.allUsers);
       },
       error: (err) => {
         console.error('Erreur chargement utilisateurs admin', err);
@@ -85,8 +88,8 @@ export class UserListComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    if (!this.rawPage) return;
-    this.users = this.applyFiltersAndSort(this.rawPage.content);
+    if (!this.allUsers) return;
+    this.users = this.applyFiltersAndSort(this.allUsers);
   }
 
   onSortChange(): void {
@@ -179,16 +182,11 @@ export class UserListComponent implements OnInit {
         // mise à jour locale
         user.active = enable;
 
-        if (this.rawPage) {
-          const idx = this.rawPage.content.findIndex((u) => u.id === user.id);
-          if (idx !== -1) {
-            this.rawPage.content[idx] = {
-              ...this.rawPage.content[idx],
-              active: enable
-            };
-          }
-          this.users = this.applyFiltersAndSort(this.rawPage.content);
+        const idx = this.allUsers.findIndex((u) => u.id === user.id);
+        if (idx !== -1) {
+          this.allUsers[idx].active = enable;
         }
+        this.users = this.applyFiltersAndSort(this.allUsers);
       },
       error: (err) => {
         console.error('Erreur changement statut utilisateur', err);
@@ -243,18 +241,13 @@ export class UserListComponent implements OnInit {
           // mise à jour locale
           this.selectedUserForRole!.role = newRole;
 
-          if (this.rawPage) {
-            const idx = this.rawPage.content.findIndex(
-              (u) => u.id === this.selectedUserForRole!.id
-            );
-            if (idx !== -1) {
-              this.rawPage.content[idx] = {
-                ...this.rawPage.content[idx],
-                role: newRole
-              };
-            }
-            this.users = this.applyFiltersAndSort(this.rawPage.content);
+          const idx = this.allUsers.findIndex(
+            (u) => u.id === this.selectedUserForRole!.id
+          );
+          if (idx !== -1) {
+            this.allUsers[idx].role = newRole;
           }
+          this.users = this.applyFiltersAndSort(this.allUsers);
 
           this.roleSuccessMessage = 'Le rôle a été mis à jour avec succès.';
           this.closeRoleModal();
