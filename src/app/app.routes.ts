@@ -17,14 +17,14 @@ export const routes: Routes = [
   {
     path: 'client',
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['CLIENT'] }, 
+    data: { roles: ['CLIENT'] },
     loadChildren: () =>
       import('./features/client/client.module').then((m) => m.ClientModule)
   },
   {
     path: 'agent',
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['AGENT_BANCAIRE'] }, 
+    data: { roles: ['AGENT'] },
     loadChildren: () =>
       import('./features/agent/agent.module').then((m) => m.AgentModule)
   },
