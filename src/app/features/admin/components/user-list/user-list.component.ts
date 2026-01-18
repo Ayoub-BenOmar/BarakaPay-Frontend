@@ -41,6 +41,12 @@ export class UserListComponent implements OnInit {
   sortField: SortField = 'createdAt';
   sortDirection: SortDirection = 'desc';
 
+  // édition de rôle
+  selectedUserForRole: AdminUserSummary | null = null;
+  selectedRole: AdminUserSummary['role'] | '' = '';
+  roleErrorMessage: string | null = null;
+  roleSuccessMessage: string | null = null;
+
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
@@ -65,9 +71,11 @@ export class UserListComponent implements OnInit {
       error: (err) => {
         console.error('Erreur chargement utilisateurs admin', err);
         if (err.status === 401 || err.status === 403) {
-          this.errorMessage = "Vous n'êtes pas autorisé à consulter la liste des utilisateurs.";
+          this.errorMessage =
+            "Vous n'êtes pas autorisé à consulter la liste des utilisateurs.";
         } else {
-          this.errorMessage = "Impossible de charger la liste des utilisateurs.";
+          this.errorMessage =
+            'Impossible de charger la liste des utilisateurs.';
         }
       },
       complete: () => {
@@ -194,5 +202,74 @@ export class UserListComponent implements OnInit {
         }
       }
     });
+  }
+
+  openRoleModal(user: AdminUserSummary): void {
+    this.selectedUserForRole = user;
+    this.selectedRole = user.role;
+    this.roleErrorMessage = null;
+    this.roleSuccessMessage = null;
+  }
+
+  closeRoleModal(): void {
+    this.selectedUserForRole = null;
+    this.selectedRole = '';
+  }
+
+  saveRole(): void {
+    this.roleErrorMessage = null;
+    this.roleSuccessMessage = null;
+
+    if (!this.selectedUserForRole) {
+      return;
+    }
+
+    if (!this.selectedRole) {
+      this.roleErrorMessage = 'Veuillez sélectionner un rôle.';
+      return;
+    }
+
+    if (this.selectedRole === this.selectedUserForRole.role) {
+      this.roleErrorMessage = 'Le rôle est déjà attribué à cet utilisateur.';
+      return;
+    }
+
+    const newRole = this.selectedRole as AdminUserSummary['role'];
+
+    this.userService
+      .updateUserRole(this.selectedUserForRole.id, newRole)
+      .subscribe({
+        next: () => {
+          // mise à jour locale
+          this.selectedUserForRole!.role = newRole;
+
+          if (this.rawPage) {
+            const idx = this.rawPage.content.findIndex(
+              (u) => u.id === this.selectedUserForRole!.id
+            );
+            if (idx !== -1) {
+              this.rawPage.content[idx] = {
+                ...this.rawPage.content[idx],
+                role: newRole
+              };
+            }
+            this.users = this.applyFiltersAndSort(this.rawPage.content);
+          }
+
+          this.roleSuccessMessage = 'Le rôle a été mis à jour avec succès.';
+          this.closeRoleModal();
+        },
+        error: (err) => {
+          console.error('Erreur mise à jour rôle utilisateur', err);
+
+          if (err.status === 401 || err.status === 403) {
+            this.roleErrorMessage =
+              "Vous n'avez pas les droits pour modifier le rôle de cet utilisateur.";
+          } else {
+            this.roleErrorMessage =
+              'Une erreur est survenue lors de la mise à jour du rôle. Veuillez réessayer.';
+          }
+        }
+      });
   }
 }

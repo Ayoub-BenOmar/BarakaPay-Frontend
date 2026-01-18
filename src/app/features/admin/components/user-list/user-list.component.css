@@ -112,6 +112,7 @@ tbody tr:nth-child(even) {
   gap: 10px;
   font-size: 0.82rem;
 }
+
 .btn-small {
   padding: 4px 10px;
   border-radius: 999px;
@@ -137,4 +138,95 @@ tbody tr:nth-child(even) {
 
 .btn-deactivate:hover {
   background: #fecaca;
+}
+
+.btn-edit-role {
+  margin-left: 6px;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.btn-edit-role:hover {
+  background: #bae6fd;
+}
+
+/* Modale de modification de rôle */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.4);
+}
+
+.modal-panel h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.modal-subtitle {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.modal-field label {
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.modal-field select {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.success-message {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: #16a34a;
 }
